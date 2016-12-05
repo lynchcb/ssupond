@@ -15,7 +15,14 @@ Mathematica is used to process the raw data into real-world measurements, turnin
 
 # Usage
 
-__Todo!__
+(Just once) make sure you've compiled the go serial2csv program, which reads the serial port from the Arduino and creates a csv file. You'll need to get either a binary or to compile it with the go toolchain.
+
+Make sure that program is loaded onto Arduino board. Set-down the setup near the bond, plug into computer, double click serial2csv program and start collecting. When done, close serial2csv window. 
+
+A .csv file should be on your desktop. Open Mathematica notebook and select the new .csv file. Refresh neccesary cells. :tada::confetti_ball:
+
+Don't forget to save :floppy_disk: your results!
+
 
 # License
 MIT. See the LICENSE file.
