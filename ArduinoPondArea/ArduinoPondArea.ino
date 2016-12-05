@@ -1,8 +1,3 @@
-
-// @ 40 ticks per 360 degree revolution
-// 1 meter of rope = rotary aparatus circumference
-const float rotaryRopeMetersPerTick = 1.0 * 360.0/40.0;
-
 int pinA = 3;  // Connected to CLK on KY-040
 int pinB = 4;  // Connected to DT on KY-040
 
@@ -12,10 +7,6 @@ int lastRotaryTicks = 0;
 int lastRotaryValue; // 1/0 read from rotary
 
 boolean rotatingClockwise;
-
-// Given a tick value from the potent, return an angle
-float potentTick2Angle(int potentTickCount);
-
 
 // set on init so we know what the orientation "0" is
 int initialPotentiometerReading = -1;
@@ -36,8 +27,8 @@ void writeCsvRow(int rotaryTickCount, int potentTickCount, double x, double y);
 bool wroteCsvHeader;
  
 void setup() { 
-    pinMode (pinA, INPUT);
-    pinMode (pinB, INPUT);
+    pinMode(pinA,INPUT);
+    pinMode(pinB,INPUT);
     /* Read Pin A
     Whatever state it's in will reflect the last position   
     */
@@ -89,40 +80,13 @@ void setup() {
     Serial.print("rotary="); Serial.print(rotaryTicks);
     Serial.print(", potent = "); Serial.println(newPotentiometerValue);
 
-    // get our coordinates in polar
-    float angle = potentTick2Angle(newPotentiometerValue);
-    float distance = rotaryRopeMetersPerTick * rotaryTicks;
-
-    // convert polar coordinates to cartesian
-    float x = distance * cos(angle);
-    float y = distance * sin(angle);
-
-    writeCsvRow(rotaryTicks, newPotentiometerValue, x, y);
+    writeCsvRow(rotaryTicks, newPotentiometerValue);
 
     // ================================================
     // end of loop
     lastRotaryValue = newRotaryValue;
     lastPotentiometerValue = newPotentiometerValue;
- } 
-
-
-float potentTick2Angle(int potentTickCount) {
-  // So it was found that the mapping from potent ticks to angles is not linear
-  // its exponential.
-  // We fit a curve with mathematica by using 
-  // "fit  {{90, 55}, {180, 280}, {270, 1023}} exponential"
-  // and it spat out
-  // angle = 18.9994 e^(0.0147675 tickCount)
-  // but that has a y intercept of ~18 degrees, so we chose to hand fit
-  // a curve (being dangerous!) of the form
-  // angle = y=a log(1+x) + b sqrt(x) for x = stepcount
-  // and chose a = 24 and b=7.1 which has good fit in our critical area of 0-180 degrees
-  const double a = 24.0;
-  const double b = 7.1;
-  const double e = 2.718281828459045;
-  return a*log10(1+potentTickCount) + b*sqrt(potentTickCount);
 }
-
 
 // sometimes we get stuck between two discrete values
 const int JITTER_SAMPLES_COUNT = 4;
@@ -148,17 +112,15 @@ void writeCsvLabel()
   // we write the read sensor values first to preserve the raw data and then our interpreted/calculated x,y points
   // in the cartesian plane
   // so it's (r, theta, x, y)
-  Serial.println("LABEL,RotaryTickCount r (arb),PotentiometerTickCount theta (arb),Calc X (meters), Calc Y (meters)");
+  Serial.println("LABEL,RotaryEncoder,Potentiometer");
 }
 
-void writeCsvRow(int rotaryTickCount, int potentTickCount, double x, double y)
+void writeCsvRow(int rotaryTickCount, int potentTickCount)
 {
   // these need to be in the same order as writeCsvLabel()'s implementation
   Serial.print("DATA");
   Serial.print(","); Serial.print(rotaryTickCount);
   Serial.print(","); Serial.print(potentTickCount);
-  Serial.print(","); Serial.print(x);
-  Serial.print(","); Serial.print(y);
   Serial.println();
 }
 
