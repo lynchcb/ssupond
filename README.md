@@ -19,7 +19,17 @@ Mathematica is used to process the raw data into real-world measurements, turnin
 
 Make sure that program is loaded onto Arduino board. Set-down the setup near the bond, plug into computer, double click serial2csv program and start collecting. When done, close serial2csv window. 
 
-A .csv file should be on your desktop. Open Mathematica notebook and select the new .csv file. Refresh neccesary cells. :tada::confetti_ball:
+A .csv file should be on your desktop. Open the `Pond Calculator` Mathematica notebook. 
+
+![FinalOuput.png](docimages/EvaluateNotebook.png)
+
+Hit the `Evaluation > Evaluate Notebook` dropdown option. A `Browse` button should appear in the notebook contents area.
+
+![Browse Button.png](docimages/BrowseButton.png)
+
+Click `Browse`, select the new .csv file that was created. Hit  `Evaluation > Evaluate Notebook` again. Your results should be at the bottom of the notebook contents. :tada::confetti_ball:
+
+![FinalOuput.png](docimages/FinalOuput.png)
 
 Don't forget to save :floppy_disk: your results!
 

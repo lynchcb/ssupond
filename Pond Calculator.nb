@@ -1,0 +1,17 @@
+{FileNameSetter[Dynamic[fname]], fname}
+
+csv = Import[fname];
+coordinates = DeleteCases[{#1,#2}& @@@Drop[csv, 1], {"", ""}];
+ListPlot[coordinates, PlotLabel->"Raw Sensor Values Over Time"]
+samplePairs = DeleteCases[{#1,#2}& @@@Drop[csv, 1], {"", ""}];
+Potent2Angle[potentiometerReading_] := (24.0*Log10[1+potentiometerReading]+7.1*Sqrt[potentiometerReading] ) Degree
+RotaryTicks2Meters[rotaryCount_] := rotaryCount*Quantity[1, "Foot"] / 40
+lengthAnglePairs = {RotaryTicks2Meters[#1], Potent2Angle[#2]}& @@@ samplePairs;
+ListPolarPlot[lengthAnglePairs, PlotLabel->"Polar Plot of Interpreted Sensor Values"]
+cartesionPairs = CoordinateTransform["Polar"->"Cartesian",#1]& /@ lengthAnglePairs;
+ListPlot[cartesionPairs, PlotLabel->"Sensor Pairs Interreted on Cartesian"]
+polyPoints = QuantityMagnitude /@ cartesionPairs; poly = Polygon[polyPoints];
+cartPlot = Graphics[{LightBlue, EdgeForm[{Thin, Brown}], poly}, PlotLabel->"Shape of Pond", GridLines->Automatic, Axes->True, ImageSize->Large];
+Graphics`Mesh`MeshInit[];
+polyArea = Abs[PolygonArea[polyPoints]] * QuantityUnit[First[First[cartesionPairs]]]^2;
+Grid[{{Grid[{{Text["The area of the pond is"], Text[polyArea]}}]}, {cartPlot}}, Frame->True]
