@@ -1,17 +1,412 @@
-{FileNameSetter[Dynamic[fname]], fname}
+(* Content-type: application/vnd.wolfram.mathematica *)
 
-csv = Import[fname];
-coordinates = DeleteCases[{#1,#2}& @@@Drop[csv, 1], {"", ""}];
-ListPlot[coordinates, PlotLabel->"Raw Sensor Values Over Time"]
-samplePairs = DeleteCases[{#1,#2}& @@@Drop[csv, 1], {"", ""}];
-Potent2Angle[potentiometerReading_] := (24.0*Log10[1+potentiometerReading]+7.1*Sqrt[potentiometerReading] ) Degree
-RotaryTicks2Meters[rotaryCount_] := rotaryCount*Quantity[1, "Foot"] / 40
-lengthAnglePairs = {RotaryTicks2Meters[#1], Potent2Angle[#2]}& @@@ samplePairs;
-ListPolarPlot[lengthAnglePairs, PlotLabel->"Polar Plot of Interpreted Sensor Values"]
-cartesionPairs = CoordinateTransform["Polar"->"Cartesian",#1]& /@ lengthAnglePairs;
-ListPlot[cartesionPairs, PlotLabel->"Sensor Pairs Interreted on Cartesian"]
-polyPoints = QuantityMagnitude /@ cartesionPairs; poly = Polygon[polyPoints];
-cartPlot = Graphics[{LightBlue, EdgeForm[{Thin, Brown}], poly}, PlotLabel->"Shape of Pond", GridLines->Automatic, Axes->True, ImageSize->Large];
-Graphics`Mesh`MeshInit[];
-polyArea = Abs[PolygonArea[polyPoints]] * QuantityUnit[First[First[cartesionPairs]]]^2;
-Grid[{{Grid[{{Text["The area of the pond is"], Text[polyArea]}}]}, {cartPlot}}, Frame->True]
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     15163,        402]
+NotebookOptionsPosition[     14841,        386]
+NotebookOutlinePosition[     15189,        401]
+CellTagsIndexPosition[     15146,        398]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Copyright", " ", "2017", " ", "Hunter", " ", "Fernandes"}], "<", 
+     RowBox[{"hgfern", " ", 
+      RowBox[{"(", "@", ")"}], " ", 
+      RowBox[{"gmail", ".", "com"}]}], ">"}], ",", 
+    RowBox[{"Cody", " ", "Lynch", " ", 
+     RowBox[{"(", 
+      RowBox[{"lynchco", " ", 
+       RowBox[{"(", "@", ")"}], " ", 
+       RowBox[{"sonoma", ".", "edu"}]}], ")"}], " ", "Permission", " ", "is", 
+     " ", "hereby", " ", "granted"}], ",", 
+    RowBox[{"free", " ", "of", " ", "charge"}], ",", 
+    RowBox[{
+    "to", " ", "any", " ", "person", " ", "obtaining", " ", "a", " ", "copy", 
+     " ", "of", " ", "this", " ", "software", " ", "and", " ", "associated", 
+     " ", "documentation", " ", "files", " ", 
+     RowBox[{"(", 
+      RowBox[{"the", " ", "\"\<Software\>\""}], ")"}]}], ",", 
+    RowBox[{
+    "to", " ", "deal", " ", "in", " ", "the", " ", "Software", " ", "without",
+      " ", "restriction"}], ",", 
+    RowBox[{
+    "including", " ", "without", " ", "limitation", " ", "the", " ", "rights",
+      " ", "to", " ", "use"}], ",", "copy", ",", "modify", ",", "merge", ",", 
+    "publish", ",", "distribute", ",", "sublicense", ",", 
+    RowBox[{
+     RowBox[{"and", "/", "or"}], " ", "sell", " ", "copies", " ", "of", " ", 
+     "the", " ", "Software"}], ",", 
+    RowBox[{
+    "and", " ", "to", " ", "permit", " ", "persons", " ", "to", " ", "whom", 
+     " ", "the", " ", "Software", " ", "is", " ", "furnished", " ", "to", " ",
+      "do", " ", "so"}], ",", 
+    RowBox[{"subject", " ", "to", " ", "the", " ", "following", " ", 
+     RowBox[{"conditions", ":", 
+      RowBox[{
+      "The", " ", "above", " ", "copyright", " ", "notice", " ", "and", " ", 
+       "this", " ", "permission", " ", "notice", " ", "shall", " ", "be", " ",
+        "included", " ", "in", " ", "all", " ", "copies", " ", "or", " ", 
+       "substantial", " ", "portions", " ", "of", " ", "the", " ", 
+       RowBox[{"Software", ".", "THE"}], " ", "SOFTWARE", " ", "IS", " ", 
+       "PROVIDED", " ", "\"\<AS IS\>\""}]}]}], ",", 
+    RowBox[{"WITHOUT", " ", "WARRANTY", " ", "OF", " ", "ANY", " ", "KIND"}], 
+    ",", 
+    RowBox[{"EXPRESS", " ", "OR", " ", "IMPLIED"}], ",", 
+    RowBox[{
+    "INCLUDING", " ", "BUT", " ", "NOT", " ", "LIMITED", " ", "TO", " ", 
+     "THE", " ", "WARRANTIES", " ", "OF", " ", "MERCHANTABILITY"}], ",", 
+    RowBox[{
+    "FITNESS", " ", "FOR", " ", "A", " ", "PARTICULAR", " ", "PURPOSE", " ", 
+     "AND", " ", 
+     RowBox[{"NONINFRINGEMENT", ".", "IN"}], " ", "NO", " ", "EVENT", " ", 
+     "SHALL", " ", "THE", " ", "AUTHORS", " ", "OR", " ", "COPYRIGHT", " ", 
+     "HOLDERS", " ", "BE", " ", "LIABLE", " ", "FOR", " ", "ANY", " ", 
+     "CLAIM"}], ",", 
+    RowBox[{"DAMAGES", " ", "OR", " ", "OTHER", " ", "LIABILITY"}], ",", 
+    RowBox[{
+    "WHETHER", " ", "IN", " ", "AN", " ", "ACTION", " ", "OF", " ", 
+     "CONTRACT"}], ",", 
+    RowBox[{"TORT", " ", "OR", " ", "OTHERWISE"}], ",", 
+    RowBox[{"ARISING", " ", "FROM"}], ",", 
+    RowBox[{
+    "OUT", " ", "OF", " ", "OR", " ", "IN", " ", "CONNECTION", " ", "WITH", 
+     " ", "THE", " ", "SOFTWARE", " ", "OR", " ", "THE", " ", "USE", " ", 
+     "OR", " ", "OTHER", " ", "DEALINGS", " ", "IN", " ", "THE", " ", 
+     RowBox[{"SOFTWARE", "."}]}]}], "*)"}], 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"LimitAngle", "[", "\[Theta]in_", "]"}], ":=", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{"#", ">", "Pi"}], ",", 
+         RowBox[{"#", "-", 
+          RowBox[{"2", "*", "Pi"}]}], ",", "#"}], "]"}], "&"}], "[", 
+      RowBox[{
+       RowBox[{"#", "&"}], "[", 
+       RowBox[{"Mod", "[", 
+        RowBox[{"\[Theta]in", ",", 
+         RowBox[{"2", "*", "Pi"}]}], "]"}], "]"}], "]"}]}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Potent2Angle", "[", "potentiometerReading_", "]"}], ":=", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"24.0", "*", 
+         RowBox[{"Log10", "[", 
+          RowBox[{"1", "+", "potentiometerReading"}], "]"}]}], "+", 
+        RowBox[{"7.1", "*", 
+         RowBox[{"Sqrt", "[", "potentiometerReading", "]"}]}]}], ")"}], " ", 
+      "Degree"}]}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"RotaryTicks2Meters", "[", "rotaryCount_", "]"}], ":=", 
+     RowBox[{"rotaryCount", "*", 
+      RowBox[{
+       RowBox[{"Quantity", "[", 
+        RowBox[{"0.3048", ",", "\"\<Meter\>\""}], "]"}], "/", "40"}]}]}], 
+    ";"}], "\n", 
+   RowBox[{
+    RowBox[{"delimeter", "=", "\"\<########## NEW SECTION ##########\>\""}], 
+    ";"}], "\n", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"TimeTaken", "[", "pondData_", "]"}], ":=", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"Last", "[", "pondData", "]"}], "[", 
+       RowBox[{"[", "3", "]"}], "]"}], "-", 
+      RowBox[{
+       RowBox[{"First", "[", "pondData", "]"}], "[", 
+       RowBox[{"[", "3", "]"}], "]"}]}]}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"Graphics`Mesh`MeshInit", "[", "]"}], ";"}], 
+   "\[IndentingNewLine]", "\n", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"CalculatePondStats", "[", 
+     RowBox[{"pondData_", ",", "pondNo_"}], "]"}], ":=", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", "samplePairs", "}"}], ",", 
+      RowBox[{
+       RowBox[{"samplePairs", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"Take", "[", 
+           RowBox[{"#", ",", "2"}], "]"}], "&"}], "/@", "pondData"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"lengthAnglePairs", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"RotaryTicks2Meters", "[", "#1", "]"}], ",", 
+            RowBox[{"LimitAngle", "[", 
+             RowBox[{"Potent2Angle", "[", "#2", "]"}], "]"}]}], "}"}], "&"}], 
+         "@@@", "samplePairs"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"cartesionPairs", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"CoordinateTransform", "[", 
+           RowBox[{
+            RowBox[{"\"\<Polar\>\"", "\[Rule]", "\"\<Cartesian\>\""}], ",", 
+            "#1"}], "]"}], "&"}], "/@", "lengthAnglePairs"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"pointPlot", "=", 
+        RowBox[{"ListPlot", "[", 
+         RowBox[{"cartesionPairs", ",", 
+          RowBox[{
+          "PlotLabel", "\[Rule]", 
+           "\"\<Sensor Pairs Interreted on Cartesian\>\""}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"polyPoints", "=", 
+        RowBox[{"QuantityMagnitude", "/@", "cartesionPairs"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"poly", "=", 
+        RowBox[{"Polygon", "[", "polyPoints", "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"cartPlot", "=", 
+        RowBox[{"Graphics", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"LightBlue", ",", 
+            RowBox[{"EdgeForm", "[", 
+             RowBox[{"{", 
+              RowBox[{"Thin", ",", "Brown"}], "}"}], "]"}], ",", "poly"}], 
+           "}"}], ",", 
+          RowBox[{"PlotLabel", "\[Rule]", "\"\<Shape of Pond\>\""}], ",", 
+          RowBox[{"GridLines", "\[Rule]", "Automatic"}], ",", 
+          RowBox[{"Axes", "\[Rule]", "True"}], ",", 
+          RowBox[{"ImageSize", "\[Rule]", "Large"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"polyArea", "=", 
+        RowBox[{
+         RowBox[{"Abs", "[", 
+          RowBox[{"PolygonArea", "[", "polyPoints", "]"}], "]"}], "*", 
+         RowBox[{
+          RowBox[{"QuantityUnit", "[", 
+           RowBox[{"First", "[", 
+            RowBox[{"First", "[", "cartesionPairs", "]"}], "]"}], "]"}], "^", 
+          "2"}]}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"Grid", "[", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"Grid", "[", 
+            RowBox[{"{", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"Text", "[", "\"\<The area of the pond is\>\"", "]"}], 
+               ",", 
+               RowBox[{"Text", "[", "polyArea", "]"}]}], "}"}], "}"}], "]"}], 
+           "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"Show", "[", 
+            RowBox[{"cartPlot", ",", "pointPlot"}], "]"}], "}"}]}], "}"}], 
+        "]"}]}]}], "]"}]}], "\n", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"showDataFor", "[", "pondNo_", "]"}], ":=", 
+     RowBox[{"Grid", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"Style", "[", 
+           RowBox[{
+            RowBox[{"Text", "[", 
+             RowBox[{"\"\<Pond No. \>\"", "<>", 
+              RowBox[{"ToString", "[", "pondNo", "]"}]}], "]"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"Larger", ",", "Orange", ",", "Bold"}], "}"}]}], "]"}], 
+          "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"CalculatePondStats", "[", 
+           RowBox[{
+            RowBox[{"pondsData", "[", 
+             RowBox[{"[", "pondNo", "]"}], "]"}], ",", "pondNo"}], "]"}], 
+          "}"}]}], "}"}], ",", 
+       RowBox[{"Frame", "\[Rule]", "Outer"}]}], "]"}]}], ";"}], "\n", 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"ShowPondsInFile", "[", "filename_", "]"}], ":=", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"fileContents", ",", "ponds"}], "}"}], ",", 
+      RowBox[{
+       RowBox[{"fileContents", "=", 
+        RowBox[{"ReadList", "[", 
+         RowBox[{"fname", ",", "String"}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ponds", "=", 
+        RowBox[{
+         RowBox[{"DeleteCases", "[", 
+          RowBox[{"{", "}"}], "]"}], "[", 
+         RowBox[{
+          RowBox[{"DeleteCases", "[", "delimeter", "]"}], "/@", 
+          RowBox[{"Split", "[", 
+           RowBox[{"fileContents", ",", 
+            RowBox[{
+             RowBox[{"#", "\[NotEqual]", "delimeter"}], "&"}]}], "]"}]}], 
+         "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"pondsDataStrings", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"StringSplit", "[", 
+           RowBox[{"#", ",", "\"\<,\>\""}], "]"}], "&"}], "/@", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Drop", "[", 
+             RowBox[{"#", ",", "1"}], "]"}], "&"}], "/@", "ponds"}], 
+          ")"}]}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"pondsData", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"ToExpression", "[", 
+                RowBox[{"#", "[", 
+                 RowBox[{"[", "1", "]"}], "]"}], "]"}], ",", 
+               RowBox[{"ToExpression", "[", 
+                RowBox[{"#", "[", 
+                 RowBox[{"[", "2", "]"}], "]"}], "]"}], ",", 
+               RowBox[{"ToExpression", "[", 
+                RowBox[{"#", "[", 
+                 RowBox[{"[", "3", "]"}], "]"}], "]"}]}], "}"}], "&"}], "/@", 
+            "#"}], ")"}], "&"}], "/@", "pondsDataStrings"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"pondsHuman", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"#", ",", 
+            RowBox[{"Length", "[", 
+             RowBox[{"pondsData", "[", 
+              RowBox[{"[", "#", "]"}], "]"}], "]"}], ",", 
+            RowBox[{"Round", "[", 
+             RowBox[{
+              RowBox[{"TimeTaken", "[", 
+               RowBox[{"pondsData", "[", 
+                RowBox[{"[", "#", "]"}], "]"}], "]"}], "/", "1000"}], "]"}], 
+            ",", 
+            RowBox[{"Button", "[", 
+             RowBox[{"\"\<Calculate\>\"", ",", 
+              RowBox[{"Print", "[", 
+               RowBox[{"showDataFor", "[", "#", "]"}], "]"}]}], "]"}]}], 
+           "}"}], "&"}], "/@", 
+         RowBox[{"Table", "[", 
+          RowBox[{"n", ",", 
+           RowBox[{"{", 
+            RowBox[{"n", ",", "1", ",", 
+             RowBox[{"Length", "[", "pondsData", "]"}]}], "}"}]}], "]"}]}]}], 
+       ";", "\[IndentingNewLine]", 
+       RowBox[{"Grid", "[", 
+        RowBox[{
+         RowBox[{"Join", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"{", 
+             RowBox[{
+             "\"\<Pond No.\>\"", ",", "\"\<Data Samples\>\"", ",", 
+              "\"\<Approx Collection Time (s)\>\""}], "}"}], "}"}], ",", 
+           "pondsHuman"}], "]"}], ",", 
+         RowBox[{"Frame", "\[Rule]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"2", "\[Rule]", "True"}], ",", 
+              RowBox[{"1", "\[Rule]", "True"}]}], "}"}], ",", "All"}], 
+           "}"}]}]}], "]"}]}]}], "]"}]}], "\n", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"fname", "=", "\"\<\>\""}], ";", 
+    RowBox[{"fpicker", ":=", 
+     RowBox[{"FileNameSetter", "[", 
+      RowBox[{
+       RowBox[{"Dynamic", "[", "fname", "]"}], ",", "\"\<Open\>\"", ",", 
+       RowBox[{"{", 
+        RowBox[{"\"\<SSU Ponds Files\>\"", "\[Rule]", 
+         RowBox[{"{", "\"\<*.PD\>\"", "}"}]}], "}"}]}], "]"}]}], ";"}], "\n", 
+   "\[IndentingNewLine]", 
+   RowBox[{"Dynamic", "[", 
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{"fname", "\[NotEqual]", "\"\<\>\""}], ",", 
+      RowBox[{"ShowPondsInFile", "[", "fname", "]"}], ",", 
+      RowBox[{"Grid", "[", 
+       RowBox[{"{", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Style", "[", 
+           RowBox[{
+            RowBox[{
+            "Text", "[", "\"\<Error: Please select a Pond File: \>\"", "]"}], 
+            ",", 
+            RowBox[{"FontColor", "\[Rule]", "Red"}], ",", 
+            RowBox[{"FontWeight", "\[Rule]", "Bold"}]}], "]"}], ",", 
+          "fpicker"}], "}"}], "}"}], "]"}]}], "]"}], "]"}], "\n", 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.692475988152663*^9, 3.6924759881576653`*^9}}],
+
+Cell[BoxData[
+ DynamicBox[ToBoxes[
+   If[$CellContext`fname != "", 
+    $CellContext`ShowPondsInFile[$CellContext`fname], 
+    Grid[{{
+       Style[
+        Text["Error: Please select a Pond File: "], FontColor -> Red, 
+        FontWeight -> Bold], $CellContext`fpicker}}]], StandardForm],
+  ImageSizeCache->{262., {9., 16.}}]], "Output",
+ CellChangeTimes->{3.6924760309803095`*^9}]
+}, Open  ]]
+},
+WindowSize->{759, 813},
+WindowMargins->{{Automatic, 572}, {64, Automatic}},
+FrontEndVersion->"11.0 for Microsoft Windows (64-bit) (September 21, 2016)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 13860, 350, 1266, "Input"],
+Cell[14443, 374, 382, 9, 75, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
