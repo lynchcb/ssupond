@@ -225,8 +225,6 @@ void setupUsbDevice()
   usbDeviceWrite("IPA\r");
   usbDeviceWrite("ECS\r");
   delay(100);
-
-  
 }
 
 void setupUsbStickForWrite()
@@ -248,6 +246,7 @@ void write2file(const String& data) {
   writeCommand += '\r';
   writeCommand += data;
   usbDeviceWrite(writeCommand);
+  delay(150);
 
   if (++write2fileCount >= USB_WRITE_MANUAL_FLUSH_RATE) {
     Serial.println("Manually closing & reopening datafile.");
@@ -259,7 +258,7 @@ void write2file(const String& data) {
 
 String dumpUsbOutput()
 {
-    if (usbDev.available() && Serial) {
+    if (usbDev.available()) {
     String fromUsb = "";
     while (usbDev.available()) {
       char readC = usbDev.read();
@@ -293,7 +292,7 @@ String dumpUsbOutput()
 void usbOpenFile4Write(const String& filename)
 {
   usbDeviceWrite("OPW " + filename + "\r");
-  delay(100);
+  delay(200);
   dumpUsbOutput();
 }
 
